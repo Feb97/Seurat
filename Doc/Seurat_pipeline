@@ -1,0 +1,101 @@
+SEURAT PIPELINE
+
+About
+The Seurat v3 anchoring procedure is designed to integrate diverse single cell datasets across technologies and modalities. 
+Seurat returns a corrected data matrix for all datasets, enabling them to be analyzed jointly in a single workflow. 
+To transfer information from a reference to query dataset, 
+Seurat does not modify the underlying expression data, but instead projects either discrete labels or continuous data across experiments.
+Our approach consists of four broad steps, as explained in detail below: 
+(1) data preprocessing and feature selection, 
+(2) dimension reduction and identification of "anchor" correspondences between datasets, 
+(3) filtering, scoring, and weighting of anchor correspondences, 
+(4) data matrix correction, or data transfer across experiments.
+
+
+
+Preprocessing
+We start by reading in the data. 
+The Read10X function reads in the output of the cellranger pipeline from 10X, returning a unique molecular identified (UMI) count matrix. 
+The values in this matrix represent the number of molecules for each feature (i.e. gene; row) that are detected in each cell (column), 
+we pass three files, barcodes.tsv, genes.tsv and matrix.mtx.
+We next use the count matrix to create a Seurat object. 
+The object serves as a container that contains both data and analysis for a single-cell dataset.
+Seurat allows you to easily explore QC (quality control) metrics and filter cells based on any user-defined criteria.
+
+
+Visualize QC metrics as a violin plot, it is a chart 
+FeatureScatter is typically used to visualize feature-feature relationships, but can be used for anything calculated by the object, i.e. columns in object metadata, 
+PC scores etc.
+
+
+Normalizing the data
+After removing unwanted cells from the dataset, the next step is to normalize the data.
+By default, we employ a global-scaling normalization method "LogNormalize" that normalizes the feature expression measurements for each cell by the total expression, 
+multiplies this by a scale factor (10,000 by default), and log-transforms the result.
+
+
+Identification of highly variable features (feature selection)
+We next calculate a subset of features that exhibit high cell-to-cell variation in the dataset (i.e, they are highly expressed in some cells, and lowly expressed in others).
+We use FindVariableFeatures function, by default, we return 2,000 features per dataset, 
+plot variable features with and without labels.
+
+
+Scaling the data
+Next, we apply a linear transformation ('scaling') that is a standard pre-processing step prior to dimensional reduction techniques like PCA. 
+The ScaleData function:
+-Shifts the expression of each gene, so that the mean expression across cells is 0
+-Scales the expression of each gene, so that the variance across cells is 1
+
+
+Perform linear dimensional reduction
+Next we perform PCA on the scaled data, Seurat provides several useful ways of visualizing both cells and features that define the PCA, including VizDimReduction, DimPlot, and DimHeatmap.
+In particular DimHeatmap allows for easy exploration of the primary sources of heterogeneity in a dataset, and can be useful when trying to decide which PCs to include for further downstream analyses. 
+Both cells and features are ordered according to their PCA scores. 
+Though clearly a supervised analysis, we find this to be a valuable tool for exploring correlated feature sets.
+
+
+Determine the 'dimensionality' of the dataset
+To overcome the extensive technical noise in any single feature for scRNA-seq data, Seurat clusters cells based on their PCA scores, with each PC essentially representing a 'metafeature' that combines information across a correlated feature set. 
+The top principal components therefore represent a robust compression of the dataset. 
+we implemented a resampling test inspired by the JackStraw procedure. 
+We randomly permute a subset of the data (1% by default) and rerun PCA, constructing a 'null distribution' of feature scores, and repeat this procedure. 
+We identify 'significant' PCs as those who have a strong enrichment of low p-value features.
+JackStrawPlot function provides a visualization tool for comparing the distribution of p-values for each PC with a uniform distribution (dashed line).
+
+
+Cluster the cells
+we first construct a KNN graph based on the euclidean distance in PCA space, and refine the edge weights between any two cells based on the shared overlap in their local neighborhoods (Jaccard similarity). This step is performed using the FindNeighbors function, and takes as input the previously defined dimensionality of the dataset
+To cluster the cells, we next apply modularity optimization techniques such as the Louvain algorithm (default) to iteratively group cells together, with the goal of optimizing the standard modularity function. 
+The FindClusters function implements this procedure, and contains a resolution parameter that sets the 'granularity' of the downstream clustering,
+
+
+Run non-linear dimensional reduction UMAP
+Seurat offers several non-linear dimensional reduction techniques, such as UMAP, to visualize and explore these datasets.
+Uniform Manifold Approximation and Projection (UMAP) is a dimension reduction technique that can be used for visualisation similarly to t-SNE, 
+but also for general non-linear dimension reduction. 
+The goal of these algorithms is to learn the underlying manifold of the data in order to place similar cells together in low-dimensional space. 
+Cells within the graph-based clusters determined above should co-localize on these dimension reduction plots. 
+As input to the UMAP, we suggest using the same PCs as input to the clustering analysis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
