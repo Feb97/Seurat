@@ -66,18 +66,7 @@ DimPlot(object = patient, reduction = "pca")
 DimHeatmap(object = patient, dims = 1, cells = 500, balanced = TRUE)
 DimHeatmap(object = patient, dims = 1:12, cells = 500, balanced = TRUE)
 
-# Each square shows the correlation between the variables on each axis. 
-# Correlation ranges from -1 to +1. Values closer to zero means there is no 
-# linear trend between the two variables. The close to 1 the correlation 
-# is the more positively correlated they are; that is as one increases so 
-# does the other and the closer to 1 the stronger this relationship is. 
-# A correlation closer to -1 is similar, but instead of both increasing one 
-# variable will decrease as the other increases. The diagonals are all 
-# 1/dark green because those squares are correlating each variable to itself 
-# (so it's a perfect correlation). For the rest the larger the number 
-# and darker the color the higher the correlation between the two variables. 
-# The plot is also symmetrical about the diagonal since the same two variables
-# are being paired together in those squares.
+
 
 # NOTE: This process can take a long time for big datasets, comment out for expediency. More approximate techniques such
 # as those implemented in ElbowPlot() can be used to reduce computation time
@@ -108,9 +97,11 @@ cluster1.markers <- FindMarkers(patient, ident.1 = 0, logfc.threshold = 0.25, te
 VlnPlot(patient, features = c("ACE2", "TMPRSS2", "FOXJ1", "MUC5AC"))
 
 # you can plot raw counts as well
+#slot	 Use non-normalized counts data for plotting
+#log	 plot the feature axis on log scale
 VlnPlot(patient, features = c("ACE2", "TMPRSS2", "FOXJ1", "MUC5AC"), slot = "counts", log = TRUE)
 
-#important UMAP!!!!!!!!!
+#important!!!!
 FeaturePlot(patient, features = c("ACE2", "TMPRSS2", "FOXJ1", "MUC5AC"))
 
 
