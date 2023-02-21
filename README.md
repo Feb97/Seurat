@@ -11,3 +11,5 @@ Abstract
 Analysis of new and previously published single cell sequencing datasets reveals that the
 SARS-CoV2 receptors Ace2 and Tmprss2 are expressed in olfactory support cells, stem cells and perivascular cells, but not in neurons. 
 Our aim is to proved how Covid19 syndrome leads to olfactory dysfunction.
+
+##################################################################################################
